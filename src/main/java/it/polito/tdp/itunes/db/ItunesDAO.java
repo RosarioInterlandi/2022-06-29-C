@@ -138,6 +138,33 @@ public class ItunesDAO {
 		}
 		return result;
 	}
-	
+	public List<Album> getVertici(Double prezzoMinimo){
+		String sql = "SELECT a.*,SUM(t.UnitPrice) AS costoAlbum "
+				+ "FROM track t, album a "
+				+ "WHERE t.AlbumId = a.AlbumId  "
+				+ "GROUP BY a.AlbumId "
+				+ "HAVING SUM(t.UnitPrice)>?";
+		List<Album> result= new ArrayList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setDouble(1, prezzoMinimo);
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) {
+				Album a =new Album(res.getInt("AlbumId"), res.getString("Title"));
+				result.add(a);
+				a.setCostoAlbum(res.getDouble("costoAlbum"));
+			}
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+		return result;
+		
+		
+	}
 	
 }
